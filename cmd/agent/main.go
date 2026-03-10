@@ -17,11 +17,11 @@ import (
     "time"
 
     cobra "github.com/spf13/cobra"
-    "agentos/pkg/tools"
-    "agentos/pkg/models"
-    "agentos/pkg/workflow"
-    regclient "agentos/pkg/registry/client"
-    oci "agentos/pkg/registry/oci"
+    "github.com/asinha07/agentOS/pkg/tools"
+    "github.com/asinha07/agentOS/pkg/models"
+    "github.com/asinha07/agentOS/pkg/workflow"
+    regclient "github.com/asinha07/agentOS/pkg/registry/client"
+    oci "github.com/asinha07/agentOS/pkg/registry/oci"
 )
 
 type Manifest struct {

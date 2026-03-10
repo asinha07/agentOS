@@ -26,7 +26,7 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Generate SBOM (Syft)
         uses: anchore/sbom-action@v0
@@ -39,7 +39,7 @@ jobs:
         with:
           files: sbom.spdx.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Attest SLSA Provenance
         uses: actions/attest-build-provenance@v1

@@ -1,4 +1,4 @@
-module agentos
+module github.com/asinha07/agentOS
 
 go 1.21
 
