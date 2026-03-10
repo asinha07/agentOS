@@ -14,6 +14,7 @@ import (
     "github.com/google/go-containerregistry/pkg/v1/mutate"
     "github.com/google/go-containerregistry/pkg/v1/remote"
     "github.com/google/go-containerregistry/pkg/v1/static"
+    crtypes "github.com/google/go-containerregistry/pkg/v1/types"
     "strings"
 )
 
@@ -21,7 +22,7 @@ import (
 func PushLib(ref, artifactPath string) error {
     b, err := os.ReadFile(artifactPath)
     if err != nil { return err }
-    layer := static.NewLayer(b, v1.MediaType(MediaTypeAgent))
+    layer := static.NewLayer(b, crtypes.MediaType(MediaTypeAgent))
     img := empty.Image
     img, err = mutate.AppendLayers(img, layer)
     if err != nil { return err }
@@ -33,7 +34,9 @@ func PushLib(ref, artifactPath string) error {
         "org.opencontainers.artifact.type": MediaTypeAgent,
         "org.opencontainers.image.title": filepath.Base(artifactPath),
     }
-    img = mutate.Annotations(img, ann).(v1.Image)
+    if newImg, err := mutate.Annotations(img, ann); err == nil {
+        img = newImg
+    }
     r, err := name.ParseReference(ref)
     if err != nil { return err }
     return remote.Write(r, img)
