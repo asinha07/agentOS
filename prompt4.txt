@@ -1,0 +1,217 @@
+PROMPT 4
+VIRAL DEMO PROMPT FOR CODEX
+
+You are a senior developer advocate and product engineer working on the open-source project AgentOS.
+
+AgentOS is intended to become:
+
+Docker for AI agents
+
+The project already contains:
+
+Agent runtime
+
+Agent CLI
+
+Agent package format
+
+Tool system
+
+Memory abstraction
+
+Model adapters
+
+Your task now is to create a killer demo agent that demonstrates the power of the platform.
+
+The demo must be so impressive that developers immediately understand the value of AgentOS.
+
+DEMO GOAL
+
+Create an agent called:
+
+startup-builder
+
+It must run with:
+
+agent run startup-builder
+DEMO BEHAVIOR
+
+The agent should:
+
+Ask the user for a startup idea.
+
+Perform market research.
+
+Generate a product specification.
+
+Create a landing page.
+
+Generate a simple MVP architecture.
+
+Example interaction:
+
+User runs:
+
+agent run startup-builder
+
+Agent asks:
+
+What startup idea do you want to explore?
+
+User enters:
+
+AI meal planner
+
+Agent then:
+
+1️⃣ Researches competitors
+2️⃣ Writes product concept
+3️⃣ Generates architecture
+4️⃣ Outputs landing page content
+
+DEMO OUTPUT
+
+The agent should produce something like:
+
+Startup Idea: AI Meal Planner
+
+Market Analysis
+--------------
+Top competitors:
+- Mealime
+- PlateJoy
+
+Opportunity:
+Personalized AI nutrition plans.
+
+Product Features
+--------------
+- diet personalization
+- grocery automation
+- recipe generation
+
+Architecture
+--------------
+Frontend: Next.js
+Backend: FastAPI
+AI: OpenAI API
+Database: Postgres
+
+Landing Page
+--------------
+Headline:
+"Your Personal AI Nutritionist"
+REQUIRED TOOLS
+
+The demo agent must use tools such as:
+
+web_search
+file_writer
+http_client
+AGENT CONFIG
+
+Create an example agent.yaml:
+
+name: startup-builder
+version: 1.0
+
+model:
+ provider: openai
+ model: gpt-4o
+
+memory:
+ type: vector
+
+tools:
+ - web_search
+ - file_writer
+
+permissions:
+ internet: true
+ filesystem: limited
+DEMO STRUCTURE
+
+The demo must include:
+
+examples/startup-builder/
+
+agent.yaml
+prompt.md
+tools/
+workflow.yaml
+PROMPT TEMPLATE
+
+Create a structured prompt for the agent:
+
+You are a startup advisor and product strategist.
+
+When given a startup idea you must:
+
+1. research the market
+2. identify competitors
+3. define product features
+4. generate architecture
+5. write landing page copy
+DEMO COMMANDS
+
+The following commands must work:
+
+agent run startup-builder
+agent inspect startup-builder
+agent publish startup-builder
+agent install startup-builder
+ADDITIONAL DEMO AGENTS
+
+Also generate two smaller demo agents:
+
+research-agent
+agent run research-agent
+
+Researches a topic and produces a report.
+
+coding-agent
+agent run coding-agent
+
+Writes code for a given task.
+
+OUTPUT REQUIREMENTS
+
+Codex must generate:
+
+complete demo agent packages
+
+example prompts
+
+example workflows
+
+example outputs
+
+documentation explaining the demo
+
+DEVELOPER EXPERIENCE
+
+The demo must feel magical.
+
+A developer should be able to run:
+
+agent run startup-builder
+
+and immediately see the power of the system.
+
+SUCCESS CRITERIA
+
+The demo must clearly demonstrate:
+
+agent packaging
+agent runtime
+tool system
+memory system
+workflow orchestration
+
+in a way that is easy to understand.
+
+FINAL GOAL
+
+Create a demo that makes developers say:
+
+"This is Docker for AI agents."

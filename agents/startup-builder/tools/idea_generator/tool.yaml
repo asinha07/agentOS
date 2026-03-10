@@ -1,0 +1,6 @@
+{
+  "name": "idea_generator",
+  "input_schema": {"type": "object", "properties": {"topic": {"type": "string"}, "count": {"type": "integer"}}, "required": ["topic"]},
+  "output_schema": {"type": "object", "properties": {"ideas": {"type": "array", "items": {"type": "string"}}}, "required": ["ideas"]}
+}
+

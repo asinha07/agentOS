@@ -1,0 +1,11 @@
+{
+  "name": "startup-builder",
+  "version": "1.0.0",
+  "description": "Killer demo: research market, define product, generate architecture, and write a landing page.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "AI meal planner", "url": "https://example.com"},
+  "tools": ["web_search", "file_writer", "http_client"],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "vector"},
+  "permissions": {"internet": true, "filesystem": "limited"}
+}

@@ -1,0 +1,6 @@
+{
+  "name": "risk_analyzer",
+  "input_schema": {"type": "object", "properties": {"idea": {"type": "string"}}},
+  "output_schema": {"type": "object", "properties": {"risks": {"type": "array", "items": {"type": "object", "properties": {"risk": {"type": "string"}, "mitigation": {"type": "string"}}}}}, "required": ["risks"]}
+}
+

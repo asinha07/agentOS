@@ -1,0 +1,11 @@
+{
+  "name": "research-agent",
+  "version": "0.1.0",
+  "description": "AI research assistant that summarizes topics and outlines key points.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "impact of AI on climate research"},
+  "tools": [],
+  "model": {"provider": "mock", "model": "mock-001"},
+  "memory": {"type": "jsonl"}
+}
+

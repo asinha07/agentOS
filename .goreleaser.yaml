@@ -1,0 +1,54 @@
+project_name: agent
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: agent
+    main: ./cmd/agent
+    binary: agent
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+brews:
+  - name: agent
+    tap:
+      owner: asinha07
+      name: homebrew-tap
+    commit_author:
+      name: agentos-bot
+      email: bot@agentos.dev
+    folder: Formula
+    homepage: https://github.com/asinha07/agentOS
+    description: "AgentOS CLI — portable AI agents with a Docker-like UX."
+    test: |
+      system "#{bin}/agent", "--help"
+
+nfpms:
+  - id: packages
+    package_name: agent
+    formats: [deb, rpm]
+    maintainer: AgentOS <maintainers@agentos.dev>
+    description: AgentOS CLI — portable AI agents with a Docker-like UX.
+    homepage: https://github.com/asinha07/agentOS
+    license: MIT
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/doc/agent/LICENSE
+
+checksum:
+  name_template: "checksums_{{ .Version }}.txt"
+
+changelog:
+  use: git

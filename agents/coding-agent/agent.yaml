@@ -1,0 +1,12 @@
+{
+  "name": "coding-agent",
+  "version": "0.1.0",
+  "description": "Assists with code tasks; can read files.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "summarize README", "path": "README.md"},
+  "tools": ["file_reader"],
+  "model": {"provider": "mock", "model": "mock-001"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"filesystem": "limited"}
+}
+

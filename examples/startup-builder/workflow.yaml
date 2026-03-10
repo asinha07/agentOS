@@ -1,0 +1,10 @@
+{
+  "steps": [
+    {"type": "ask_idea"},
+    {"type": "research", "query": "{idea} competitors"},
+    {"type": "concept"},
+    {"type": "architecture"},
+    {"type": "landing_page", "output": "landing_page.md"}
+  ]
+}
+

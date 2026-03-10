@@ -1,0 +1,238 @@
+You are a principal engineer and distributed systems architect.
+
+You are tasked with building an open-source platform called:
+
+AgentOS
+
+AgentOS aims to become:
+
+Docker for AI agents
+
+Before writing ANY code, you must reason deeply about the system architecture.
+
+Follow the process below.
+
+PHASE 1 — PROBLEM ANALYSIS
+
+First analyze the problem space.
+
+Explain:
+
+Why current AI agent frameworks are fragmented
+
+Why agents lack portability
+
+Why packaging and runtime standards are required
+
+How Docker succeeded by defining a container standard
+
+How AgentOS can replicate this for AI agents
+
+Your analysis should explain the ecosystem problem clearly.
+
+PHASE 2 — DEFINE CORE ABSTRACTIONS
+
+Identify the fundamental primitives needed for AI agents.
+
+Define abstractions for:
+
+Agent
+Tool
+Memory
+Model
+Workflow
+Runtime
+Registry
+
+Explain the responsibilities of each abstraction.
+
+PHASE 3 — DEFINE THE OPEN AGENT SPECIFICATION
+
+Design the Open Agent Specification (OAS).
+
+This specification must define:
+
+.agent package format
+agent.yaml schema
+tool interface
+memory interface
+model adapter interface
+runtime contract
+
+Explain why defining the standard is more important than the runtime.
+
+PHASE 4 — SYSTEM ARCHITECTURE
+
+Design the full architecture.
+
+Example:
+
+Agent CLI
+     │
+Agent Runtime
+     │
+├ Tool System
+├ Memory Layer
+├ Model Adapter
+└ Workflow Engine
+
+Explain the role of each component.
+
+PHASE 5 — AGENT EXECUTION MODEL
+
+Design the execution lifecycle.
+
+Explain the reasoning loop:
+
+input
+↓
+prompt construction
+↓
+model inference
+↓
+tool detection
+↓
+tool execution
+↓
+memory update
+↓
+repeat
+
+Discuss:
+
+how tool calls are detected
+
+how memory is stored
+
+how agents terminate execution
+
+PHASE 6 — SECURITY MODEL
+
+Design the sandbox model.
+
+Agents must run with permission policies.
+
+Define controls for:
+
+filesystem access
+network access
+shell execution
+tool permissions
+
+Explain how the runtime enforces these.
+
+PHASE 7 — EXTENSIBILITY
+
+AgentOS must be extensible.
+
+Design extension systems for:
+
+tool plugins
+memory adapters
+model adapters
+external registries
+
+Explain how third parties can extend the system.
+
+PHASE 8 — ECOSYSTEM STRATEGY
+
+Explain how the project can grow into an ecosystem.
+
+Possible ecosystem components:
+
+agent marketplace
+agent hosting platforms
+enterprise agent governance
+agent observability tools
+
+Explain why open standards drive adoption.
+
+PHASE 9 — REPOSITORY DESIGN
+
+Design the project repository.
+
+Example structure:
+
+agentos/
+
+cmd/
+ agent/
+
+runtime/
+
+pkg/
+ tools/
+ memory/
+ models/
+
+registry/
+
+spec/
+
+examples/
+
+docs/
+
+Explain the responsibility of each directory.
+
+PHASE 10 — IMPLEMENTATION PLAN
+
+Before writing code, produce a step-by-step engineering plan.
+
+Implementation phases should include:
+
+Phase 1 — CLI
+Phase 2 — Agent Package Loader
+Phase 3 — Runtime Engine
+Phase 4 — Tool Plugin System
+Phase 5 — Memory Interface
+Phase 6 — Model Adapter
+Phase 7 — Registry
+Phase 8 — Workflow Engine
+Phase 9 — Security Sandbox
+
+Each phase must describe:
+
+modules to build
+
+interfaces to define
+
+tests required
+
+PHASE 11 — RISKS
+
+Identify major risks:
+
+runtime complexity
+tool compatibility
+memory abstractions
+model provider changes
+security concerns
+
+Explain mitigation strategies.
+
+PHASE 12 — FINAL DESIGN OUTPUT
+
+Before implementing code, produce:
+
+architecture diagrams
+
+system abstractions
+
+interface definitions
+
+repository structure
+
+implementation roadmap
+
+Only after completing this analysis should you begin coding.
+
+IMPORTANT RULE
+
+Do NOT write code until the architectural design is complete.
+
+Think like a staff engineer designing a foundational open-source platform.
+
+The goal is to create a system that could realistically become:
+
+the runtime standard for AI agents

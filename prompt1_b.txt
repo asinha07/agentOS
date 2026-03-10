@@ -1,0 +1,162 @@
+You are designing AgentOS, a platform intended to become:
+
+Docker for AI agents
+
+Before implementing anything, you must adopt the following product design rule.
+
+CRITICAL PRODUCT PRINCIPLE
+
+AgentOS must be CLI-first, not framework-first.
+
+Most AI tools fail because they are built as:
+
+SDKs
+libraries
+frameworks
+
+This forces developers to:
+
+write code
+
+configure agents
+
+wire tools
+
+integrate APIs
+
+This creates friction.
+
+AgentOS must instead follow the pattern used by successful infrastructure projects:
+
+Project	Viral command
+Docker	docker run nginx
+Supabase	npx supabase start
+Vercel	npx create-next-app
+
+AgentOS must provide the same experience.
+
+REQUIRED FIRST EXPERIENCE
+
+A developer installing AgentOS must immediately be able to run:
+
+agent run startup-builder
+
+This command must:
+
+load a packaged agent
+
+initialize tools
+
+initialize memory
+
+call the model
+
+produce useful output
+
+No coding required.
+
+PLATFORM DESIGN IMPLICATION
+
+This decision affects the entire architecture.
+
+The system must prioritize:
+
+1 CLI as primary interface
+
+The CLI is the main entry point.
+
+Required commands:
+
+agent init
+agent run
+agent install
+agent publish
+agent inspect
+agent compose
+2 Prebuilt Agents
+
+AgentOS must ship with several built-in agents.
+
+Examples:
+
+startup-builder
+research-agent
+coding-agent
+seo-agent
+web-scraper-agent
+
+These allow developers to immediately see the platform's power.
+
+3 Agent Registry
+
+Agents must be installable via a registry.
+
+Example:
+
+agent install research-agent
+agent install coding-agent
+
+Agents may also be installable from GitHub:
+
+agent install github.com/user/research-agent
+4 Portable Agent Packages
+
+Agents must be packaged artifacts:
+
+.agent
+
+Example:
+
+research-agent.agent
+
+Agents must run without requiring custom integration code.
+
+README REQUIREMENT
+
+The first command shown in the README must be:
+
+agent run startup-builder
+
+This command must demonstrate:
+
+agent runtime
+
+tool system
+
+memory
+
+model integration
+
+in a way that is impressive and easy to understand.
+
+PRODUCT SUCCESS CRITERION
+
+AgentOS succeeds if developers can experience the platform in less than 30 seconds.
+
+install → run → wow
+
+This experience must be prioritized over API completeness.
+
+ARCHITECTURAL PRIORITY
+
+When designing the system architecture, optimize for:
+
+CLI magic
+
+not for:
+
+framework extensibility
+
+Framework APIs can come later.
+
+The first priority is a powerful CLI experience.
+
+DESIGN CHECK
+
+Before implementing code, verify that the system enables:
+
+agent run startup-builder
+agent install research-agent
+agent publish my-agent
+
+without requiring developers to write custom code.

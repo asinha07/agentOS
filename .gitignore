@@ -1,0 +1,24 @@
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Build outputs and caches
+agent-go
+**/dist/
+.gocache/
+.gomodcache/
+
+# Local runtime state
+runs/
+installed_agents/
+.downloads/
+landing_page.md
+
+# Registry artifacts generated locally
+registry/agents/*.agent
+
+# Python prototype caches
+__pycache__/
+*.pyc
+

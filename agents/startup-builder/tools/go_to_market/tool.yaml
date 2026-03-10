@@ -1,0 +1,6 @@
+{
+  "name": "go_to_market",
+  "input_schema": {"type": "object", "properties": {"idea": {"type": "string"}, "audience": {"type": "string"}}, "required": ["idea"]},
+  "output_schema": {"type": "object", "properties": {"audience": {"type": "string"}, "pricing": {"type": "string"}, "channels": {"type": "array", "items": {"type": "string"}}}, "required": ["channels"]}
+}
+

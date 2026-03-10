@@ -1,0 +1,12 @@
+{
+  "name": "web-scraper-agent",
+  "version": "0.1.0",
+  "description": "Fetch a URL and summarize content.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "scrape example.com", "url": "https://example.com"},
+  "tools": ["http_client", "web_search"],
+  "model": {"provider": "mock", "model": "mock-001"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"internet": true}
+}
+
