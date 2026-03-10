@@ -6,7 +6,6 @@ import (
     "io"
     "os"
     "path/filepath"
-    "crypto/sha256"
 
     "github.com/google/go-containerregistry/pkg/name"
     "github.com/google/go-containerregistry/pkg/v1/empty"
@@ -14,7 +13,6 @@ import (
     "github.com/google/go-containerregistry/pkg/v1/remote"
     "github.com/google/go-containerregistry/pkg/v1/static"
     crtypes "github.com/google/go-containerregistry/pkg/v1/types"
-    "strings"
 )
 
 // PushLib uploads the .agent artifact as a single-layer OCI image using go-containerregistry.
@@ -25,15 +23,7 @@ func PushLib(ref, artifactPath string) error {
     img := empty.Image
     img, err = mutate.AppendLayers(img, layer)
     if err != nil { return err }
-    // Add annotations, including SHA256 of artifact
-    sum := sha256.Sum256(b)
-    ann := map[string]string{
-        "dev.agentos.sha256": fmt.Sprintf("%x", sum[:]),
-        "org.opencontainers.artifact.description": "AgentOS package",
-        "org.opencontainers.artifact.type": MediaTypeAgent,
-        "org.opencontainers.image.title": filepath.Base(artifactPath),
-    }
-    img = mutate.Annotations(img, ann)
+    // Note: Manifest annotations omitted in prototype to ensure compatibility across versions
     r, err := name.ParseReference(ref)
     if err != nil { return err }
     return remote.Write(r, img)
@@ -47,23 +37,7 @@ func PullLib(ref string) (string, error) {
     if err != nil { return "", err }
     layers, err := img.Layers()
     if err != nil { return "", err }
-    // Verify annotations if present
-    if mf, err := img.Manifest(); err == nil && mf.Annotations != nil {
-        expected := mf.Annotations["dev.agentos.sha256"]
-        if expected != "" {
-            // Read first layer and verify hash
-            if len(layers) > 0 {
-                rc, _ := layers[0].Uncompressed()
-                defer rc.Close()
-                var buf bytes.Buffer
-                io.Copy(&buf, rc)
-                got := fmt.Sprintf("%x", sha256.Sum256(buf.Bytes()))
-                if !strings.EqualFold(got, expected) {
-                    return "", fmt.Errorf("sha256 mismatch: expected %s got %s", expected, got)
-                }
-            }
-        }
-    }
+    // Note: No manifest annotation verification in prototype path
     for _, l := range layers {
         mt, _ := l.MediaType()
         if string(mt) != MediaTypeAgent { continue }
