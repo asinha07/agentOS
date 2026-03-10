@@ -552,11 +552,6 @@ func main() {
             line, _ := reader.ReadString('\n')
             input = strings.TrimSpace(line)
         }
-        // Apply provider/model overrides via environment variables for the process by setting a temporary context.
-        if overrideProvider != "" || overrideModel != "" {
-            // We'll pass overrides via env for simplicity; the runtime will read manifest but we can inject via defaults map.
-            // Instead, set globals by writing a small marker file in agent dir (not ideal). For prototype, pass through main call.
-        }
         return runAgentWithOverrides(dir, input, runsDir, overrideProvider, overrideModel)
     }}
     run.Flags().StringVar(&input, "input", "", "Optional input for the agent")
