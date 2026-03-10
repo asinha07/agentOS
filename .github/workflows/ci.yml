@@ -21,6 +21,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Tidy modules
+        run: |
+          go mod tidy
+          go mod download
+
       - name: Build CLI
         run: go build -v ./cmd/agent
 
@@ -40,6 +45,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22.x'
+
+      - name: Tidy modules
+        run: |
+          go mod tidy
+          go mod download
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
