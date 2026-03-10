@@ -18,19 +18,19 @@ archives:
   - id: default
     format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    files:
+    extra_files:
       - LICENSE
       - README.md
 
 brews:
   - name: agent
-    tap:
+    repository:
       owner: asinha07
       name: homebrew-tap
     commit_author:
       name: agentos-bot
       email: bot@agentos.dev
-    folder: Formula
+    directory: Formula
     homepage: https://github.com/asinha07/agentOS
     description: "AgentOS CLI — portable AI agents with a Docker-like UX."
     test: |
