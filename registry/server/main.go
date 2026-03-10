@@ -35,7 +35,9 @@ func listAgents(root string) ([]AgentInfo, error) {
 
 func main() {
     root := filepath.Join("registry", "agents")
-    os.MkdirAll(root, 0o755)
+    if err := os.MkdirAll(root, 0o755); err != nil {
+        log.Fatalf("failed to create registry dir: %v", err)
+    }
     http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
         q := r.URL.Query().Get("q")
         list, _ := listAgents(root)
@@ -46,11 +48,13 @@ func main() {
             }
         }
         w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(map[string]any{"agents": filt})
+        if err := json.NewEncoder(w).Encode(map[string]any{"agents": filt}); err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
     })
     fs := http.FileServer(http.Dir(root))
     http.Handle("/agents/", http.StripPrefix("/agents/", fs))
     log.Println("AgentOS Registry server on :8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
-

@@ -44,7 +44,7 @@ func Download(base, file string) (string, error) {
     if err != nil { return "", err }
     defer resp.Body.Close()
     if resp.StatusCode != 200 { return "", fmt.Errorf("registry download status %d", resp.StatusCode) }
-    os.MkdirAll(".downloads", 0o755)
+    if err := os.MkdirAll(".downloads", 0o755); err != nil { return "", err }
     out := filepath.Join(".downloads", file)
     f, err := os.Create(out)
     if err != nil { return "", err }
@@ -70,7 +70,7 @@ func DownloadURL(u string) (string, error) {
     if resp.StatusCode != 200 { return "", fmt.Errorf("registry download status %d", resp.StatusCode) }
     name := filepath.Base(resp.Request.URL.Path)
     if !strings.HasSuffix(name, ".agent") { name = name + ".agent" }
-    os.MkdirAll(".downloads", 0o755)
+    if err := os.MkdirAll(".downloads", 0o755); err != nil { return "", err }
     out := filepath.Join(".downloads", name)
     f, err := os.Create(out)
     if err != nil { return "", err }

@@ -64,7 +64,9 @@ func (m *RunMemory) writeKV(key string, value any) error {
     p := filepath.Join(m.dir, "kv.json")
     var data map[string]any
     if b, err := os.ReadFile(p); err == nil {
-        json.Unmarshal(b, &data)
+        if err := json.Unmarshal(b, &data); err != nil {
+            data = map[string]any{}
+        }
     }
     if data == nil {
         data = map[string]any{}
@@ -74,9 +76,7 @@ func (m *RunMemory) writeKV(key string, value any) error {
     return os.WriteFile(p, b, 0o644)
 }
 
-func nowID() string {
-    return time.Now().UTC().Format("20060102-150405.000000Z07:00")
-}
+// nowID removed (unused)
 
 func loadManifest(dir string) (*Manifest, error) {
     b, err := os.ReadFile(filepath.Join(dir, "agent.yaml"))
@@ -412,21 +412,21 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
     fmt.Println()
     fmt.Println("Opportunity:")
     base := strings.ToLower(strings.TrimSpace(topic))
-    if strings.HasPrefix(base, "ai ") { base = strings.TrimPrefix(base, "ai ") }
+    base = strings.TrimPrefix(base, "ai ")
     fmt.Printf("Personalized AI %s.\n\n", base)
 
     fmt.Println("Product Features")
     fmt.Println("--------------")
     fmt.Println("- diet personalization")
     fmt.Println("- grocery automation")
-    fmt.Println("- recipe generation\n")
+    fmt.Println("- recipe generation")
 
     fmt.Println("Architecture")
     fmt.Println("--------------")
     fmt.Println("Frontend: Next.js")
     fmt.Println("Backend: FastAPI")
     fmt.Println("AI: OpenAI API")
-    fmt.Println("Database: Postgres\n")
+    fmt.Println("Database: Postgres")
 
     headline := "Your Personal AI Nutritionist"
     landing := fmt.Sprintf("# %s\n\n%s\n\nCTA: Get Started", headline, strings.ReplaceAll(company, "\n", "  \n"))

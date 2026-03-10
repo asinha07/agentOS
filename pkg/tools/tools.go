@@ -9,6 +9,8 @@ import (
     "path/filepath"
     "strings"
     "time"
+    "golang.org/x/text/cases"
+    "golang.org/x/text/language"
 )
 
 type Context struct {
@@ -41,9 +43,10 @@ func (w WebSearch) Execute(input map[string]any, ctx Context) (Result, error) {
     q, _ := input["query"].(string)
     if q == "" { q = "example" }
     // Stub results only; no network used
+    title := cases.Title(language.Und)
     results := []map[string]string{
-        {"title": fmt.Sprintf("%s — Overview", strings.Title(q)), "url": fmt.Sprintf("https://example.com/%s", strings.ReplaceAll(q, " ", "-"))},
-        {"title": fmt.Sprintf("%s — Guides", strings.Title(q)), "url": fmt.Sprintf("https://example.com/%s-guides", strings.ReplaceAll(q, " ", "-"))},
+        {"title": fmt.Sprintf("%s — Overview", title.String(q)), "url": fmt.Sprintf("https://example.com/%s", strings.ReplaceAll(q, " ", "-"))},
+        {"title": fmt.Sprintf("%s — Guides", title.String(q)), "url": fmt.Sprintf("https://example.com/%s-guides", strings.ReplaceAll(q, " ", "-"))},
     }
     return Result{"results": results}, nil
 }
