@@ -25,11 +25,11 @@ jobs:
           go mod tidy
           go mod download
 
-      - name: Setup Goreleaser
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean
+          args: release --clean --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
