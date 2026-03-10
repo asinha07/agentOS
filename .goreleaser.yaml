@@ -23,6 +23,7 @@ brews:
     repository:
       owner: asinha07
       name: homebrew-tap
+      token: "{{ .Env.BREW_TAP_TOKEN }}"
     commit_author:
       name: agentos-bot
       email: bot@agentos.dev

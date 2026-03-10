@@ -32,7 +32,8 @@ jobs:
           version: v2.14.3
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BREW_TAP_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Generate SBOM (Syft)
         uses: anchore/sbom-action@v0
