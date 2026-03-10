@@ -26,6 +26,23 @@ jobs:
         run: |
           go mod download -mod=readonly || true
 
+      - name: Delete existing GitHub Release for this tag (if any)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -e
+          echo "Checking for existing release $TAG in $REPO"
+          resp=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/tags/$TAG" || true)
+          id=$(echo "$resp" | jq -r '.id // empty')
+          if [ -n "$id" ]; then
+            echo "Deleting existing release id $id"
+            curl -s -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$REPO/releases/$id" > /dev/null
+          else
+            echo "No existing release for tag $TAG"
+          fi
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
