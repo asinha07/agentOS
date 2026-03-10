@@ -9,7 +9,6 @@ import (
     "crypto/sha256"
 
     "github.com/google/go-containerregistry/pkg/name"
-    v1 "github.com/google/go-containerregistry/pkg/v1"
     "github.com/google/go-containerregistry/pkg/v1/empty"
     "github.com/google/go-containerregistry/pkg/v1/mutate"
     "github.com/google/go-containerregistry/pkg/v1/remote"
@@ -34,9 +33,7 @@ func PushLib(ref, artifactPath string) error {
         "org.opencontainers.artifact.type": MediaTypeAgent,
         "org.opencontainers.image.title": filepath.Base(artifactPath),
     }
-    if newImg, err := mutate.Annotations(img, ann); err == nil {
-        img = newImg
-    }
+    img = mutate.Annotations(img, ann)
     r, err := name.ParseReference(ref)
     if err != nil { return err }
     return remote.Write(r, img)
