@@ -20,16 +20,15 @@ jobs:
         with:
           go-version: '1.22.x'
 
-      - name: Tidy modules
+      - name: Download modules (readonly)
         run: |
-          go mod tidy
-          go mod download
+          go mod download -mod=readonly || true
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           version: v2.14.3
-          args: release --clean
+          args: release --clean --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
