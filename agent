@@ -1,7 +1,31 @@
 #!/usr/bin/env python3
+import os
 import sys
-from agentos.cli import main
+import shutil
+
+def execv(prog, args):
+    os.execv(prog, [prog] + args)
+
+def main():
+    # Prefer local Go CLI if available
+    here = os.path.dirname(os.path.abspath(__file__))
+    go_cli = os.path.join(here, "agent-go")
+    if os.path.exists(go_cli) and os.access(go_cli, os.X_OK):
+        execv(go_cli, sys.argv[1:])
+        return
+    # Prefer brew-installed agent if different from this script
+    brew_agent = shutil.which("agent")
+    if brew_agent and os.path.realpath(brew_agent) != os.path.realpath(__file__):
+        execv(brew_agent, sys.argv[1:])
+        return
+    # Fallback to Python prototype (deprecated)
+    try:
+        from agentos.cli import main as py_main
+    except Exception:
+        print("AgentOS: no Go CLI found and Python prototype not available.")
+        sys.exit(1)
+    print("[warning] Using Python prototype CLI — results may differ from Go CLI.")
+    sys.exit(py_main())
 
 if __name__ == "__main__":
-    sys.exit(main())
-
+    main()
