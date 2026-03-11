@@ -1,0 +1,12 @@
+{
+  "name": "growth-hacker",
+  "version": "0.2.0",
+  "description": "Creates a growth plan with channels, experiments, and metrics.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "Team todo app", "output": "growth_plan.md"},
+  "tools": ["web_search", "file_writer"],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"internet": true, "filesystem": "limited"}
+}
+

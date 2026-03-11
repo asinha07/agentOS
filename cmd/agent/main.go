@@ -302,43 +302,28 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
         }
     }
     _ = mem.appendEvent("start", map[string]any{"agent": m.Name, "version": m.Version, "topic": topic, "provider": m.Model["provider"], "model": m.Model["model"]})
+
+    // Special composite agent: app-team
+    if m.Name == "app-team" {
+        agentsDir := filepath.Dir(agentPath) // points to agents/
+        team := []string{"product-manager", "be-developer", "web-developer", "qa", "code-reviewer"}
+        fmt.Printf("AgentOS — app-team\n        Run ID: %s\n\n", runID)
+        for _, member := range team {
+            path := filepath.Join(agentsDir, member)
+            fmt.Printf("→ Running %s\n", member)
+            if err := runAgentWithOverrides(path, topic, runsDir, overrideProvider, overrideModel); err != nil {
+                return fmt.Errorf("member %s failed: %w", member, err)
+            }
+        }
+        _ = mem.appendEvent("final", map[string]any{"output": "team done"})
+        return nil
+    }
     // Built-in tools
     // ideas placeholder for future ideation step
     best := topic
-    // Model output: try selected provider if configured, else mock
-    var company string
+    // Provider selection
     provider := strings.ToLower(m.Model["provider"])
-    switch provider {
-    case "openai":
-        if os.Getenv("OPENAI_API_KEY") != "" {
-            if content, err := (models.OpenAI{Model: m.Model["model"]}).Generate(fmt.Sprintf("Propose a company name and tagline for: %s", best)); err == nil {
-                company = content
-            }
-        }
-    case "anthropic", "claude":
-        if os.Getenv("ANTHROPIC_API_KEY") != "" {
-            if content, err := (models.Anthropic{Model: m.Model["model"]}).Generate(fmt.Sprintf("Propose a company name and tagline for: %s", best)); err == nil {
-                company = content
-            }
-        }
-    case "xai", "grok":
-        if os.Getenv("XAI_API_KEY") != "" {
-            if content, err := (models.Grok{Model: m.Model["model"]}).Generate(fmt.Sprintf("Propose a company name and tagline for: %s", best)); err == nil {
-                company = content
-            }
-        }
-    }
-    if company == "" {
-        company = fmt.Sprintf("Company Name: %s Works\nTagline: A privacy-first way to unlock %s.", strings.Split(best, " ")[0], fmt.Sprintf("Propose a company name and tagline for: %s", best))
-    }
-    _ = mem.appendEvent("model.info", map[string]any{"provider": m.Model["provider"], "model": m.Model["model"]})
-    _ = mem.appendEvent("model.output", map[string]any{"content": company})
-
-    // GTM and Risks defaults
-    channels := []string{"Developer communities", "Product Hunt/Reddit/Twitter", fmt.Sprintf("Content + SEO around %s", best), "Partnerships with tooling platforms", "Outbound to target accounts"}
-    _ = mem.appendEvent("tool.go_to_market", map[string]any{"channels": channels})
-    risks := []map[string]string{{"risk": "Model/provider dependency", "mitigation": "Adapters and caching"}, {"risk": "Privacy/compliance", "mitigation": "Encryption and DPA"}}
-    _ = mem.appendEvent("tool.risk_analyzer", map[string]any{"risks": risks})
+    modelID := m.Model["model"]
 
     // Execute optional declared tools (web_search, file_reader, http_client)
     perms := m.Permissions
@@ -392,33 +377,73 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
     // If workflow present, execute its steps to shape output accordingly.
     fmt.Printf("AgentOS — %s\n", m.Name)
     fmt.Printf("        Run ID: %s\n", runID)
-    if m.Model != nil && m.Model["provider"] != "" {
-        fmt.Printf("        Model: %s %s\n\n", m.Model["provider"], m.Model["model"])
-    } else {
-        fmt.Printf("        Model: mock\n\n")
-    }
+    activeProvider := "mock"
+    activeModel := "mock"
     fmt.Printf("Context: %s\n\n", topic)
+
+    // Helper to generate content via selected provider
+    genWithProvider := func(prompt string) (string, bool) {
+        switch provider {
+        case "openai":
+            if os.Getenv("OPENAI_API_KEY") != "" {
+                if content, err := (models.OpenAI{Model: modelID}).Generate(prompt); err == nil {
+                    activeProvider, activeModel = "openai", modelID
+                    return content, true
+                }
+            }
+        case "anthropic", "claude":
+            if os.Getenv("ANTHROPIC_API_KEY") != "" {
+                if content, err := (models.Anthropic{Model: modelID}).Generate(prompt); err == nil {
+                    activeProvider, activeModel = "anthropic", modelID
+                    return content, true
+                }
+            }
+        case "xai", "grok":
+            if os.Getenv("XAI_API_KEY") != "" {
+                if content, err := (models.Grok{Model: modelID}).Generate(prompt); err == nil {
+                    activeProvider, activeModel = "xai", modelID
+                    return content, true
+                }
+            }
+        }
+        return "", false
+    }
 
     // Team agents: generate role-specific documents
     outPath := "artifact.md"
     if v, ok := m.Defaults["output"].(string); ok && v != "" { outPath = v }
     var wrote string
     if hasTool(m.Tools, "file_writer") && (m.Name == "product-manager" || m.Name == "be-developer" || m.Name == "web-developer" || m.Name == "qa" || m.Name == "code-reviewer") {
+        // Prompt base from prompt.md if present
+        basePrompt := ""
+        if b, err := os.ReadFile(filepath.Join(agentPath, "prompt.md")); err == nil { basePrompt = string(b) }
         var content string
         switch m.Name {
         case "product-manager":
-            content = fmt.Sprintf("# PRD — %s\n\n## Problem\nSummarize the pain points.\n\n## Target Users\nList personas.\n\n## Top Features\n1. ...\n2. ...\n\n## Success Metrics\nNorth star and leading indicators.\n\n## Risks & Assumptions\n...\n\n## Milestones\nPhase 1, Phase 2...\n", topic)
-            if arr, ok := webResults.([]any); ok && len(arr) > 0 {
-                content += "\n## Competitors\n"; for _, it := range arr { content += fmt.Sprintf("- %v\n", it) }
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nPlease write a concise PRD covering problem, personas, features + acceptance criteria, success metrics, risks/assumptions, milestones.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# PRD — %s\n\n## Problem\n...\n\n## Personas\n...\n\n## Features\n1. ...\n2. ...\n\n## Metrics\n...\n\n## Risks\n...\n\n## Milestones\n...\n", topic)
             }
         case "be-developer":
-            content = fmt.Sprintf("# Backend Design — %s\n\n## APIs\n- GET /...\n- POST /...\n\n## Data Model\n- tables/collections and relationships\n\n## Services\n- service responsibilities\n\n## NFRs\n- performance, reliability, observability\n\n## Security\n- auth, encryption, secrets\n", topic)
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a backend design: APIs (paths, payloads), data model, services, NFRs, security.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Backend Design — %s\n\n## APIs\n- GET /...\n\n## Data Model\n- tables and relationships\n\n## Services\n- responsibilities\n\n## NFRs\n- perf, reliability, observability\n\n## Security\n- auth, encryption, secrets\n", topic)
+            }
         case "web-developer":
-            content = fmt.Sprintf("# Frontend Design — %s\n\n## Architecture\n- routing, state management\n\n## Routes & Components\n- / -> ...\n\n## UI Flows\n- key wireframes\n\n## Quality\n- accessibility, performance, i18n\n", topic)
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a frontend design: architecture, routes/components, flows, quality (a11y/perf/i18n).", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Frontend Design — %s\n\n## Architecture\n- routing, state management\n\n## Routes\n- / -> ...\n\n## UI Flows\n- ...\n\n## Quality\n- a11y, perf, i18n\n", topic)
+            }
         case "qa":
-            content = fmt.Sprintf("# Test Plan — %s\n\n## Scope\n...\n\n## Scenarios\n- happy paths\n- edge cases\n\n## Integration & Performance\n...\n", topic)
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a QA test plan: scope, scenarios (happy/edge), integration/performance tests, data, environments.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Test Plan — %s\n\n## Scope\n...\n\n## Scenarios\n- happy paths\n- edge cases\n\n## Integration & Performance\n...\n", topic)
+            }
         case "code-reviewer":
-            content = fmt.Sprintf("# Review — %s\n\n## Checklist\n- correctness, clarity, safety\n\n## Design Notes\n- backend and frontend\n\n## Risks & Follow-ups\n...\n", topic)
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a review: code-review checklist, design notes (BE/FE), risks and follow-ups.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Review — %s\n\n## Checklist\n- correctness, clarity, safety\n\n## Design Notes\n- backend and frontend\n\n## Risks & Follow-ups\n...\n", topic)
+            }
         }
         if t, ok := tools.Get("file_writer"); ok {
             out, err := t.Execute(map[string]any{"path": outPath, "content": content}, ctx)
@@ -430,8 +455,66 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
             }
         }
     }
+    // Generic content (and model) for other agent names when file_writer is available
+    if wrote == "" && hasTool(m.Tools, "file_writer") {
+        // Read prompt.md if present
+        basePrompt := ""
+        if b, err := os.ReadFile(filepath.Join(agentPath, "prompt.md")); err == nil { basePrompt = string(b) }
+        var content string
+        switch m.Name {
+        case "coding-agent":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a coding plan: tasks, guidelines, tests.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Coding Plan — %s\n\n## Tasks\n- scaffold project\n- implement modules\n- write tests\n\n## Guidelines\n- code style\n- error handling\n- logging\n", topic)
+            }
+        case "research-agent":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a research report: summary and sources.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Research Report — %s\n\n## Summary\n...\n\n## Sources\n- ...\n", topic)
+            }
+        case "seo-agent":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite an SEO brief: keywords, content plan, technical checklist, measurement.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# SEO Brief — %s\n\n## Keywords\n- ...\n\n## Content Plan\n- ...\n\n## Technical\n- sitemap, robots, meta\n", topic)
+            }
+        case "growth-hacker":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a growth plan: channels, experiments, loops, metrics.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Growth Plan — %s\n\n## Channels\n- social, content, partnerships\n\n## Experiments\n- A/B ideas\n\n## Metrics\n- activation, retention, referral\n", topic)
+            }
+        case "bug-fixer":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a bug fix plan: reproduction, root cause, fix & tests, rollout.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Bug Fix Plan — %s\n\n## Reproduction\n...\n\n## Root Cause Analysis\n...\n\n## Fix & Tests\n...\n", topic)
+            }
+        case "data-analyst":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite an analysis plan: questions, sources, methods, viz.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Analysis Plan — %s\n\n## Questions\n- ...\n\n## Data Sources\n- ...\n\n## Methods\n- SQL, stats, viz\n", topic)
+            }
+        case "web-scraper":
+            prompt := fmt.Sprintf("%s\n\nTopic: %s\nWrite a scraping outline: targets, selectors, storage, anti-bot.", basePrompt, topic)
+            if c, ok := genWithProvider(prompt); ok { content = c } else {
+                content = fmt.Sprintf("# Scraping Outline — %s\n\n## Targets\n- URLs\n\n## Selectors\n- CSS/XPath\n\n## Storage\n- CSV/DB\n", topic)
+            }
+        }
+        if content != "" {
+            if v, ok := m.Defaults["output"].(string); ok && v != "" { outPath = v } else { outPath = "artifact.md" }
+            if t, ok := tools.Get("file_writer"); ok {
+                out, err := t.Execute(map[string]any{"path": outPath, "content": content}, ctx)
+                if err == nil {
+                    _ = mem.appendEvent("tool.file_writer", out)
+                    if p, ok := out["path"].(string); ok { wrote = p }
+                } else {
+                    _ = mem.appendEvent("tool.file_writer.error", map[string]any{"error": err.Error()})
+                }
+            }
+        }
+    }
     if wrote != "" { fmt.Printf("Wrote %s\n", wrote) }
     if httpStatus != 0 { fmt.Printf("HTTP status: %d\n", httpStatus) }
+    // Emit model info event with actual provider used
+    _ = mem.appendEvent("model.info", map[string]any{"active_provider": activeProvider, "active_model": activeModel})
     _ = mem.appendEvent("final", map[string]any{"output": "ok"})
     _ = mem.writeKV("topic", topic)
     _ = mem.writeKV("best_idea", best)
@@ -557,6 +640,7 @@ func main() {
     var regURL string
     var artifactURL string
     var ociPullRef string
+    var ghRef string
     install := &cobra.Command{Use: "install", Short: "Install an agent", RunE: func(cmd *cobra.Command, args []string) error {
         if len(args) < 1 {
             // list built-ins
@@ -571,6 +655,17 @@ func main() {
         }
         src := args[0]
         // From registry by name
+        if ghRef != "" || strings.HasPrefix(src, "github.com/") || (!strings.Contains(src, "/") && strings.Count(src, "/")==0 && strings.Contains(src, "@") && strings.Count(src, "@")==1) {
+            // GitHub ref: github.com/owner/repo@tag or owner/repo@tag
+            ref := src
+            if ghRef != "" { ref = ghRef }
+            dl, err := githubapi.InstallRef(ref)
+            if err != nil { return err }
+            mf, err := extractPackage(dl, installed)
+            if err != nil { return err }
+            fmt.Printf("Installed %s@%s from GitHub\n", mf.Name, mf.Version)
+            return nil
+        }
         if regURL != "" && !strings.HasSuffix(src, ".agent") && !strings.Contains(src, "/") {
             results, err := regclient.Search(regURL, src)
             if err != nil { return err }
@@ -652,6 +747,7 @@ func main() {
     install.Flags().StringVar(&regURL, "registry", "", "Registry base URL (e.g. http://localhost:8080)")
     install.Flags().StringVar(&artifactURL, "url", "", "Direct artifact URL (overrides name)")
     install.Flags().StringVar(&ociPullRef, "oci-ref", "", "OCI reference to pull (requires oras CLI)")
+    install.Flags().StringVar(&ghRef, "github", "", "GitHub ref owner/repo[@tag] (overrides name)")
 
     // inspect
     inspect := &cobra.Command{Use: "inspect", Short: "Inspect an agent", RunE: func(cmd *cobra.Command, args []string) error {
@@ -805,20 +901,126 @@ func main() {
 
     // search
     var searchRegistry string
-    search := &cobra.Command{Use: "search", Short: "Search registry for agents", RunE: func(cmd *cobra.Command, args []string) error {
-        if searchRegistry == "" { return fmt.Errorf("--registry required") }
+    var searchGitHub bool
+    search := &cobra.Command{Use: "search", Short: "Search registry or GitHub for agents", RunE: func(cmd *cobra.Command, args []string) error {
+        if !searchGitHub && searchRegistry == "" {
+            if os.Getenv("AGENT_REGISTRY") != "" {
+                searchRegistry = os.Getenv("AGENT_REGISTRY")
+            } else {
+                return fmt.Errorf("set --registry or use --github to search GitHub")
+            }
+        }
         q := ""
         if len(args) > 0 { q = args[0] }
-        results, err := regclient.Search(searchRegistry, q)
-        if err != nil { return err }
-        for _, a := range results {
-            fmt.Printf("%s@%s (%s)\n", a.Name, a.Version, a.File)
+        if searchGitHub {
+            repos, err := githubapi.SearchRepos(q)
+            if err != nil { return err }
+            for _, r := range repos { fmt.Printf("%s — %s\n", r.FullName, r.Description) }
+            return nil
+        } else {
+            results, err := regclient.Search(searchRegistry, q)
+            if err != nil { return err }
+            for _, a := range results {
+                fmt.Printf("%s@%s (%s)\n", a.Name, a.Version, a.File)
+            }
+            return nil
         }
+    }}
+    search.Flags().StringVar(&searchRegistry, "registry", "", "Registry base URL (defaults to $AGENT_REGISTRY)")
+    search.Flags().BoolVar(&searchGitHub, "github", false, "Search GitHub (topic: agentos-agent)")
+
+    // team alias for app-team
+    team := &cobra.Command{Use: "team", Short: "Run the five-agent team", RunE: func(cmd *cobra.Command, args []string) error {
+        return runAgentWithOverrides(filepath.Join(builtins, "app-team"), input, runsDir, overrideProvider, overrideModel)
+    }}
+    team.Flags().StringVar(&input, "input", "", "Optional input for the team")
+    team.Flags().StringVar(&overrideProvider, "provider", "", "Override model provider (openai|anthropic|xai)")
+    team.Flags().StringVar(&overrideModel, "model", "", "Override model id")
+
+    // doctor
+    var doctorRegistry string
+    doctor := &cobra.Command{Use: "doctor", Short: "Check environment and provider connectivity", RunE: func(cmd *cobra.Command, args []string) error {
+        fmt.Println("AgentOS Doctor — environment checks")
+        // Providers
+        // OpenAI
+        if os.Getenv("OPENAI_API_KEY") == "" {
+            fmt.Println("OpenAI: missing OPENAI_API_KEY (optional)")
+        } else {
+            fmt.Print("OpenAI: testing ... ")
+            if _, err := (models.OpenAI{Model: "gpt-4.1"}).Generate("ping"); err != nil {
+                fmt.Printf("ERROR (%v)\n", err)
+            } else {
+                fmt.Println("OK")
+            }
+        }
+        // Anthropic
+        if os.Getenv("ANTHROPIC_API_KEY") == "" {
+            fmt.Println("Anthropic: missing ANTHROPIC_API_KEY (optional)")
+        } else {
+            fmt.Print("Anthropic: testing ... ")
+            if _, err := (models.Anthropic{Model: "claude-3-5-sonnet-latest"}).Generate("ping"); err != nil {
+                fmt.Printf("ERROR (%v)\n", err)
+            } else {
+                fmt.Println("OK")
+            }
+        }
+        // xAI
+        if os.Getenv("XAI_API_KEY") == "" {
+            fmt.Println("xAI (Grok): missing XAI_API_KEY (optional)")
+        } else {
+            fmt.Print("xAI (Grok): testing ... ")
+            if _, err := (models.Grok{Model: "grok-2"}).Generate("ping"); err != nil {
+                fmt.Printf("ERROR (%v)\n", err)
+            } else {
+                fmt.Println("OK")
+            }
+        }
+        // GitHub token (rate limit)
+        if os.Getenv("GITHUB_TOKEN") == "" {
+            fmt.Println("GitHub: missing GITHUB_TOKEN (optional; improves rate limits)")
+        } else {
+            fmt.Print("GitHub API: testing rate_limit ... ")
+            req, _ := http.NewRequest("GET", "https://api.github.com/rate_limit", nil)
+            req.Header.Set("Authorization", "Bearer "+os.Getenv("GITHUB_TOKEN"))
+            req.Header.Set("Accept", "application/vnd.github+json")
+            resp, err := http.DefaultClient.Do(req)
+            if err != nil {
+                fmt.Printf("ERROR (%v)\n", err)
+            } else {
+                defer resp.Body.Close()
+                if resp.StatusCode == 200 {
+                    fmt.Println("OK")
+                } else {
+                    fmt.Printf("status %d\n", resp.StatusCode)
+                }
+            }
+        }
+        // Registry
+        reg := doctorRegistry
+        if reg == "" { reg = os.Getenv("AGENT_REGISTRY") }
+        if reg != "" {
+            fmt.Printf("Registry: testing %s ... ", reg)
+            url := reg
+            if !strings.Contains(url, "/search") {
+                if strings.HasSuffix(url, "/") { url = url+"search" } else { url = url+"/search" }
+            }
+            req, _ := http.NewRequest("GET", url+"?q=doctor", nil)
+            resp, err := http.DefaultClient.Do(req)
+            if err != nil {
+                fmt.Printf("ERROR (%v)\n", err)
+            } else {
+                defer resp.Body.Close()
+                if resp.StatusCode == 200 { fmt.Println("OK") } else { fmt.Printf("status %d\n", resp.StatusCode) }
+            }
+        } else {
+            fmt.Println("Registry: not set (set AGENT_REGISTRY or use --registry)")
+        }
+        fmt.Println("Doctor checks completed.")
         return nil
     }}
-    search.Flags().StringVar(&searchRegistry, "registry", "", "Registry base URL")
+    doctor.Flags().StringVar(&doctorRegistry, "registry", "", "Registry URL to test (defaults to $AGENT_REGISTRY)")
 
-    root.AddCommand(run, build, install, inspect, logs, initCmd, publish, compose, search)
+    root.AddCommand(run, build, install, inspect, logs, initCmd, publish, compose, search, team, doctor)
     if err := root.Execute(); err != nil {
         fmt.Fprintln(os.Stderr, err)
         os.Exit(2)

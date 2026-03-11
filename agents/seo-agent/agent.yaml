@@ -1,0 +1,12 @@
+{
+  "name": "seo-agent",
+  "version": "0.2.0",
+  "description": "Produces an SEO brief (keywords, content plan, technical checklist).",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "Team todo app", "output": "seo_brief.md"},
+  "tools": ["web_search", "file_writer"],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"internet": true, "filesystem": "limited"}
+}
+
