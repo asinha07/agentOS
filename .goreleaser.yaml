@@ -17,7 +17,6 @@ archives:
     files:
       - LICENSE
       - README.md
-      - configs/application.yml
       - agents/*/agent.yaml
       - agents/*/prompt.md
 
@@ -42,7 +41,19 @@ brews:
     install: |
       bin.install "agent"
       (etc/"agentos").mkpath
-      (etc/"agentos").install "configs/application.yml"
+      # write default config if missing
+      cfg = (etc/"agentos"/"application.yml")
+      if !cfg.exist?
+        cfg.write <<~EOS
+          # AgentOS default configuration (sample)
+          registry:
+            url: ""
+          models:
+            provider: "openai"
+            model: "gpt-4.1"
+          # Providers keys come from env: OPENAI_API_KEY, ANTHROPIC_API_KEY, XAI_API_KEY
+        EOS
+      end
       (share/"agentos").mkpath
       system "cp", "-R", "agents", (share/"agentos").to_s
 
@@ -57,9 +68,10 @@ nfpms:
     contents:
       - src: ./LICENSE
         dst: /usr/share/doc/agent/LICENSE
-      - src: ./configs/application.yml
-        dst: /etc/agentos/application.yml
-        type: config
+      - src: ./agents
+        dst: /usr/share/agentos/agents
+    scripts:
+      postinstall: scripts/postinstall.sh
       - src: ./agents
         dst: /usr/share/agentos/agents
 
