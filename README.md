@@ -244,6 +244,7 @@ Notes
 - A sample config is installed by Homebrew/Linux packages at:
   - macOS: `/opt/homebrew/etc/agentos/application.yml` (or `/usr/local/etc/agentos/application.yml`)
   - Linux: `/etc/agentos/application.yml`
+  - The CLI also writes a user config on first run if missing: `~/.config/agentos/application.yml`.
 
 Star & Share
 - If this saved you time, please star the repo: https://github.com/asinha07/agentOS — it helps others find AgentOS.

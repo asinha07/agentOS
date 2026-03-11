@@ -564,7 +564,26 @@ func defaultBuiltinsDir() string {
     return "agents"
 }
 
+func ensureUserConfig() {
+    cfgContent := `# AgentOS default configuration (sample)
+registry:
+  url: ""
+models:
+  provider: "openai"
+  model: "gpt-4.1"
+# Provider keys from env: OPENAI_API_KEY, ANTHROPIC_API_KEY, XAI_API_KEY
+`
+    dir, err := os.UserConfigDir()
+    if err != nil { return }
+    base := filepath.Join(dir, "agentos")
+    _ = os.MkdirAll(base, 0o755)
+    cfg := filepath.Join(base, "application.yml")
+    if _, err := os.Stat(cfg); err == nil { return }
+    _ = os.WriteFile(cfg, []byte(cfgContent), 0o644)
+}
+
 func main() {
+    ensureUserConfig()
     var runsDir = "runs"
     var builtins = defaultBuiltinsDir()
     var examples = "examples"

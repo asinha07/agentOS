@@ -1,0 +1,20 @@
+# AgentOS default configuration (sample)
+
+# Optional default registry. If set, `agent search` and `agent install` will
+# use this when `--registry` is not provided.
+registry:
+  url: ""
+
+# Optional default model provider and model. You can override per-run with
+# `--provider/--model` flags.
+models:
+  provider: "openai"
+  model: "gpt-4.1"
+
+# Notes:
+# - Provider API keys are read from environment variables:
+#   OPENAI_API_KEY, ANTHROPIC_API_KEY, XAI_API_KEY
+# - This file is not required. It is installed by Homebrew/Linux packages as
+#   a convenience reference at /etc/agentos/application.yml (Linux) and
+#   /opt/homebrew/etc/agentos/application.yml or /usr/local/etc/agentos/application.yml (macOS).
+
