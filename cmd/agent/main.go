@@ -10,6 +10,7 @@ import (
     "io/fs"
     "crypto/sha256"
     "bufio"
+    "net/http"
     "os"
     "os/exec"
     "path/filepath"
@@ -21,6 +22,7 @@ import (
     "github.com/asinha07/agentOS/pkg/models"
     "github.com/asinha07/agentOS/pkg/workflow"
     regclient "github.com/asinha07/agentOS/pkg/registry/client"
+    githubapi "github.com/asinha07/agentOS/pkg/registry/githubapi"
     oci "github.com/asinha07/agentOS/pkg/registry/oci"
 )
 
@@ -328,7 +330,7 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
     // Execute optional declared tools (web_search, file_reader, http_client)
     perms := m.Permissions
     ctx := tools.Context{Internet: toBool(perms["internet"]), Filesystem: toFS(perms["filesystem"]), Workdir: mustGetwd()}
-    var webResults any
+    // web_search (optional)
     researchQuery := topic + " competitors"
     if wf != nil {
         for _, s := range wf.Steps {
@@ -343,7 +345,6 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
     if hasTool(m.Tools, "web_search") {
         if t, ok := tools.Get("web_search"); ok {
             out, _ := t.Execute(map[string]any{"query": researchQuery}, ctx)
-            webResults = out["results"]
             _ = mem.appendEvent("tool.web_search", out)
         }
     }
