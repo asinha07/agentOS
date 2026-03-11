@@ -72,8 +72,6 @@ nfpms:
         dst: /usr/share/agentos/agents
     scripts:
       postinstall: scripts/postinstall.sh
-      - src: ./agents
-        dst: /usr/share/agentos/agents
 
 checksum:
   name_template: "checksums_{{ .Version }}.txt"
