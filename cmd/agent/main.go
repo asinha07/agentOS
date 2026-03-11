@@ -397,67 +397,41 @@ func runAgentWithOverrides(agentPath string, input string, runsDir string, overr
     } else {
         fmt.Printf("        Model: mock\n\n")
     }
-    fmt.Printf("Startup Idea: %s\n\n", topic)
-    fmt.Println("Market Analysis")
-    fmt.Println("--------------")
-    fmt.Println("Top competitors:")
-    if arr, ok := webResults.([]any); ok && len(arr) > 0 {
-        for _, it := range arr { fmt.Printf("- %v\n", it) }
-    } else if list, ok := webResults.([]map[string]string); ok && len(list) > 0 {
-        for _, it := range list { if t, ok := it["title"]; ok { fmt.Printf("- %s\n", t) } }
-    } else {
-        fmt.Println("- ExampleApp")
-        fmt.Println("- SampleCo")
-    }
-    fmt.Println()
-    fmt.Println("Opportunity:")
-    base := strings.ToLower(strings.TrimSpace(topic))
-    base = strings.TrimPrefix(base, "ai ")
-    fmt.Printf("Personalized AI %s.\n\n", base)
+    fmt.Printf("Context: %s\n\n", topic)
 
-    fmt.Println("Product Features")
-    fmt.Println("--------------")
-    fmt.Println("- diet personalization")
-    fmt.Println("- grocery automation")
-    fmt.Println("- recipe generation")
-
-    fmt.Println("Architecture")
-    fmt.Println("--------------")
-    fmt.Println("Frontend: Next.js")
-    fmt.Println("Backend: FastAPI")
-    fmt.Println("AI: OpenAI API")
-    fmt.Println("Database: Postgres")
-
-    headline := "Your Personal AI Nutritionist"
-    landing := fmt.Sprintf("# %s\n\n%s\n\nCTA: Get Started", headline, strings.ReplaceAll(company, "\n", "  \n"))
-    outPath := "landing_page.md"
-    if wf != nil {
-        for _, s := range wf.Steps {
-            if s.Type == "landing_page" && s.Output != "" {
-                outPath = s.Output
-                break
+    // Team agents: generate role-specific documents
+    outPath := "artifact.md"
+    if v, ok := m.Defaults["output"].(string); ok && v != "" { outPath = v }
+    var wrote string
+    if hasTool(m.Tools, "file_writer") && (m.Name == "product-manager" || m.Name == "be-developer" || m.Name == "web-developer" || m.Name == "qa" || m.Name == "code-reviewer") {
+        var content string
+        switch m.Name {
+        case "product-manager":
+            content = fmt.Sprintf("# PRD — %s\n\n## Problem\nSummarize the pain points.\n\n## Target Users\nList personas.\n\n## Top Features\n1. ...\n2. ...\n\n## Success Metrics\nNorth star and leading indicators.\n\n## Risks & Assumptions\n...\n\n## Milestones\nPhase 1, Phase 2...\n", topic)
+            if arr, ok := webResults.([]any); ok && len(arr) > 0 {
+                content += "\n## Competitors\n"; for _, it := range arr { content += fmt.Sprintf("- %v\n", it) }
             }
+        case "be-developer":
+            content = fmt.Sprintf("# Backend Design — %s\n\n## APIs\n- GET /...\n- POST /...\n\n## Data Model\n- tables/collections and relationships\n\n## Services\n- service responsibilities\n\n## NFRs\n- performance, reliability, observability\n\n## Security\n- auth, encryption, secrets\n", topic)
+        case "web-developer":
+            content = fmt.Sprintf("# Frontend Design — %s\n\n## Architecture\n- routing, state management\n\n## Routes & Components\n- / -> ...\n\n## UI Flows\n- key wireframes\n\n## Quality\n- accessibility, performance, i18n\n", topic)
+        case "qa":
+            content = fmt.Sprintf("# Test Plan — %s\n\n## Scope\n...\n\n## Scenarios\n- happy paths\n- edge cases\n\n## Integration & Performance\n...\n", topic)
+        case "code-reviewer":
+            content = fmt.Sprintf("# Review — %s\n\n## Checklist\n- correctness, clarity, safety\n\n## Design Notes\n- backend and frontend\n\n## Risks & Follow-ups\n...\n", topic)
         }
-    }
-    // Try file_writer tool to write landing page
-    var lpPath string
-    if hasTool(m.Tools, "file_writer") {
         if t, ok := tools.Get("file_writer"); ok {
-            out, err := t.Execute(map[string]any{"path": outPath, "content": landing}, ctx)
+            out, err := t.Execute(map[string]any{"path": outPath, "content": content}, ctx)
             if err == nil {
                 _ = mem.appendEvent("tool.file_writer", out)
-                if p, ok := out["path"].(string); ok { lpPath = p }
+                if p, ok := out["path"].(string); ok { wrote = p }
             } else {
                 _ = mem.appendEvent("tool.file_writer.error", map[string]any{"error": err.Error()})
             }
         }
     }
-    fmt.Println("Landing Page")
-    fmt.Println("--------------")
-    fmt.Println("Headline:")
-    fmt.Printf("\"%s\"\n", headline)
-    if lpPath != "" { fmt.Printf("(Written to %s)\n", lpPath) }
-    if httpStatus != 0 { fmt.Printf("(Fetched example page, status %d)\n", httpStatus) }
+    if wrote != "" { fmt.Printf("Wrote %s\n", wrote) }
+    if httpStatus != 0 { fmt.Printf("HTTP status: %d\n", httpStatus) }
     _ = mem.appendEvent("final", map[string]any{"output": "ok"})
     _ = mem.writeKV("topic", topic)
     _ = mem.writeKV("best_idea", best)

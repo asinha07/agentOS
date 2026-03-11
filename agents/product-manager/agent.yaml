@@ -1,0 +1,12 @@
+{
+  "name": "product-manager",
+  "version": "0.2.0",
+  "description": "Generates a concise PRD (product requirements document) for an app idea.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "Team todo app", "output": "product_spec.md"},
+  "tools": ["web_search", "file_writer"],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"internet": true, "filesystem": "limited"}
+}
+

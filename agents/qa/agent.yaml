@@ -1,0 +1,12 @@
+{
+  "name": "qa",
+  "version": "0.2.0",
+  "description": "Creates a test plan from PRD and designs.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "Team todo app", "output": "test_plan.md"},
+  "tools": ["file_reader", "file_writer"],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"filesystem": "limited"}
+}
+

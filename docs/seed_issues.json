@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Enforce filesystem/network/tool policies at runtime",
+    "body": "Implement policy enforcement for filesystem (allowlist + ro/rw), network (egress allowlist), and tool allowlist. Emit deny logs with human-readable messages and add basic tests.",
+    "labels": ["security", "enhancement"]
+  },
+  {
+    "title": "Add --verbose flag to echo tool and memory events",
+    "body": "When --verbose is set, echo tool calls, memory appends, and model info to stdout during runs. Include timestamps and kinds.",
+    "labels": ["ux", "good-first-issue"]
+  },
+  {
+    "title": "Registry search pagination and filters",
+    "body": "Extend `agent search` to support --page/--limit and optional filters (e.g., tags). Update client and CLI accordingly.",
+    "labels": ["registry", "enhancement"]
+  },
+  {
+    "title": "Validate agent.yaml against JSON Schema",
+    "body": "Define a JSON Schema for agent.yaml (prototype scope) and validate during `agent build` and `agent run`. Add docs and examples.",
+    "labels": ["spec", "good-first-issue"]
+  },
+  {
+    "title": "Cosign verify for OCI pulls",
+    "body": "Add optional signature verification for OCI artifacts on install using cosign. Provide a --oci-verify flag and clear errors on mismatch.",
+    "labels": ["oci", "security"]
+  }
+]
+

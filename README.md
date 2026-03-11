@@ -1,6 +1,9 @@
 AgentOS CLI — Portable Agents, One Command Run
 
 [![CI](https://github.com/asinha07/agentOS/actions/workflows/ci.yml/badge.svg)](https://github.com/asinha07/agentOS/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/asinha07/agentOS?sort=semver)](https://github.com/asinha07/agentOS/releases)
+[![Homebrew tap](https://img.shields.io/homebrew/v/agent?repository=asinha07/homebrew-tap)](https://github.com/asinha07/homebrew-tap)
+[![Release](https://img.shields.io/github/v/release/asinha07/agentOS?sort=semver)](https://github.com/asinha07/agentOS/releases)
 
 AgentOS is a CLI-first platform that packages AI agents as portable `.agent` artifacts and runs them consistently across environments. Think “docker for AI agents”: build once, publish to a registry, install and run by name.
 
@@ -11,8 +14,20 @@ Highlights
 - Simple registry integration: search, publish, install
 
 Quick Start
-- Build the CLI: `go build -o agent-go ./cmd/agent`
-- Run a built-in agent: `./agent-go run startup-builder`
+- Install via Homebrew (macOS/Linux):
+  - `brew tap asinha07/homebrew-tap`
+  - `brew install agent`
+  - Run: `agent run product-manager --input "Team todo app"`
+  - Or run the whole team: `agent compose --agents product-manager,be-developer,web-developer,qa,code-reviewer --input "Team todo app"`
+
+- Linux packages (deb/rpm):
+  - Download from [Releases](https://github.com/asinha07/agentOS/releases)
+  - Debian/Ubuntu: `sudo apt install ./agent_<version>_linux_amd64.deb`
+  - RHEL/Fedora: `sudo rpm -i agent_<version>_linux_amd64.rpm`
+
+- Build from source:
+  - `go build -o agent-go ./cmd/agent`
+  - `./agent-go run product-manager --input "Team todo app"`
 - Auto-install from a registry (if missing):
   - Start the sample registry: `go run registry/server/main.go`
   - `./agent-go run startup-builder --registry http://localhost:8080`
@@ -113,9 +128,11 @@ Repository Layout
 - `pkg/registry/` — registry client
 - `registry/server/` — simple HTTP registry (search + artifacts)
 - `agents/` — built-in agents for local runs
-- `examples/` — example agents and expected outputs
 - `docs/` — overview, architecture, spec, and demo docs
   - `docs/developer-guide.md` — step-by-step tutorial to create, package, publish, and run agents
+  - `docs/index.md` — docs index (GitHub Pages ready)
+  - `docs/roadmap.md` — milestones and planned work
+  - `docs/demo-app-team.md` — five-agent team demo walkthrough
 
 Continuous Integration
 - GitHub Actions workflow in `.github/workflows/ci.yml` builds the CLI and vets packages on pushes and PRs.
