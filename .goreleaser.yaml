@@ -17,6 +17,9 @@ archives:
     files:
       - LICENSE
       - README.md
+      - configs/application.yml
+      - agents/*/agent.yaml
+      - agents/*/prompt.md
 
 brews:
   - name: agent
@@ -36,6 +39,12 @@ brews:
     description: "AgentOS CLI — portable AI agents with a Docker-like UX."
     test: |
       system "#{bin}/agent", "--help"
+    install: |
+      bin.install "agent"
+      (etc/"agentos").mkpath
+      (etc/"agentos").install "configs/application.yml"
+      (share/"agentos").mkpath
+      system "cp", "-R", "agents", (share/"agentos").to_s
 
 nfpms:
   - id: packages
@@ -48,6 +57,11 @@ nfpms:
     contents:
       - src: ./LICENSE
         dst: /usr/share/doc/agent/LICENSE
+      - src: ./configs/application.yml
+        dst: /etc/agentos/application.yml
+        type: config
+      - src: ./agents
+        dst: /usr/share/agentos/agents
 
 checksum:
   name_template: "checksums_{{ .Version }}.txt"

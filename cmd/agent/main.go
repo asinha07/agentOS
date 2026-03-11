@@ -549,9 +549,24 @@ func hasTool(ts []any, name string) bool {
 }
 func mustGetwd() string { wd, _ := os.Getwd(); return wd }
 
+func defaultBuiltinsDir() string {
+    if v := os.Getenv("AGENT_BUILTINS_DIR"); v != "" { return v }
+    // Common install locations
+    candidates := []string{
+        "/usr/local/share/agentos/agents",
+        "/opt/homebrew/share/agentos/agents",
+        "/usr/share/agentos/agents",
+        "agents",
+    }
+    for _, p := range candidates {
+        if fi, err := os.Stat(p); err == nil && fi.IsDir() { return p }
+    }
+    return "agents"
+}
+
 func main() {
     var runsDir = "runs"
-    var builtins = "agents"
+    var builtins = defaultBuiltinsDir()
     var examples = "examples"
     var installed = "installed_agents"
 
