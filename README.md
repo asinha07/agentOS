@@ -1,4 +1,4 @@
-AgentOS CLI — Portable Agents, One Command Run
+Run AI agents like Docker containers.
 
 [![CI](https://github.com/asinha07/agentOS/actions/workflows/ci.yml/badge.svg)](https://github.com/asinha07/agentOS/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/asinha07/agentOS?sort=semver)](https://github.com/asinha07/agentOS/releases)
@@ -6,6 +6,8 @@ AgentOS CLI — Portable Agents, One Command Run
 [![Release](https://img.shields.io/github/v/release/asinha07/agentOS?sort=semver)](https://github.com/asinha07/agentOS/releases)
 
 AgentOS is a CLI-first platform that packages AI agents as portable `.agent` artifacts and runs them consistently across environments. Think “docker for AI agents”: build once, publish to a registry, install and run by name.
+
+AgentOS CLI — Portable Agents, One Command Run
 
 Highlights
 - Run by name with auto-pull: `./agent-go run <agent> --registry <URL>`
@@ -31,12 +33,37 @@ Contents
 - [Quick Start](#quick-start)
 - [Model Providers](#model-providers)
 - [Five‑Agent Team Demo](docs/demo-app-team.md)
+- [GitHub Registry & Template](docs/template-repo.md)
+- [FAQ](docs/faq.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Security & Permissions](docs/security.md)
+- [Agent Manifest (agent.yaml)](docs/agent-schema.md)
+- [Tools & Permissions](docs/tools.md)
 
 Quick Start
 - Install via Homebrew (macOS/Linux):
   - `brew tap asinha07/homebrew-tap`
   - `brew install agent`
   - Run: `agent run product-manager --input "Team todo app"`
+    
+  Expected output (excerpt):
+  
+  ```
+  AgentOS — product-manager
+          Run ID: 2026...
+          Model: anthropic claude-3-5-sonnet-latest
+
+  Context: Team todo app
+  Wrote product_spec.md
+  ```
+
+  Don’t like OpenAI? Use Claude or Grok:
+
+  ```
+  agent run product-manager \
+    --provider anthropic --model claude-3-5-sonnet-latest \
+    --input "Team todo app"
+  ```
   - Or run the whole team: `agent compose --agents product-manager,be-developer,web-developer,qa,code-reviewer --input "Team todo app"`
 
 - Linux packages (deb/rpm):
@@ -83,8 +110,18 @@ Install/Run From Registry (No Cloning)
   - Package: `./agent-go build agents/my-agent`
   - Publish: `./agent-go publish my-agent && go run registry/server/main.go`
 - Consumer
-  - Run: `./agent-go run my-agent --registry http://publisher-host:8080`
-  - Or install first: `./agent-go install my-agent --registry http://publisher-host:8080`
+  - Search: `agent search --registry http://publisher-host:8080`
+  - Install: `agent install coding-agent --registry http://publisher-host:8080`
+  - Run: `agent run coding-agent`
+  - One-liner demo (publisher): run `scripts/publish_demo.sh http://localhost:8080` to publish built-ins, then try the search/install above.
+
+GitHub as Registry
+- Install directly from a GitHub repo release (first .agent asset):
+  - `agent install github.com/owner/repo@v1.0.0`
+  - or `agent install owner/repo@v1.0.0`
+- Search GitHub repos tagged with the topic `agentos-agent`:
+  - `agent search --github my-agent`
+- Tip: set `GITHUB_TOKEN` for higher rate limits.
 
 Agent Package Format
 - `.agent` is a tar.gz of an agent folder (excluding `dist/`)
@@ -203,6 +240,11 @@ License
 
 Notes
 - A small Python prototype also exists in this repo for fast iteration; the Go CLI is the primary product.
+- See [AWESOME_AGENTOS.md](AWESOME_AGENTOS.md) for a curated list of built‑in and community agents.
+
+Star & Share
+- If this saved you time, please star the repo: https://github.com/asinha07/agentOS — it helps others find AgentOS.
+- Share your agent by tagging your repo with the topic `agentos-agent` and adding a release with a `.agent` asset. People can install it with `agent install github.com/<you>/<repo>@<tag>`.
 Install via Homebrew (after first release)
 - brew tap asinha07/homebrew-tap
 - brew install agent

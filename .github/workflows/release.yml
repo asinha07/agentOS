@@ -27,6 +27,8 @@ jobs:
       - name: Download modules (readonly)
         run: |
           go mod download -mod=readonly || true
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Delete existing GitHub Release for this tag (if any)
         env:
@@ -53,6 +55,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BREW_TAP_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Build CLI for packaging demo agents
+        run: go build -o agent ./cmd/agent
+
+      - name: Package built-in agents
+        run: |
+          set -e
+          AGENTS=(product-manager be-developer web-developer qa code-reviewer coding-agent research-agent seo-agent growth-hacker bug-fixer data-analyst web-scraper app-team)
+          for a in "${AGENTS[@]}"; do
+            ./agent build agents/$a || true
+          done
+
+      - name: Upload .agent artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            agents/*/dist/*.agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate SBOM (Syft)
         uses: anchore/sbom-action@v0

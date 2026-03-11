@@ -1,0 +1,11 @@
+{
+  "name": "app-team",
+  "version": "0.2.0",
+  "description": "Runs the five-agent team (PM, BE, FE, QA, Reviewer) in sequence.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "Team todo app"},
+  "tools": [],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "jsonl"}
+}
+

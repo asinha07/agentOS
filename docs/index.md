@@ -18,12 +18,29 @@ Portable AI agents with a Docker-like developer experience.
 - From source:
   - `go build -o agent-go ./cmd/agent`
 
+![Team Demo](./assets/demo-team.gif)
+
 ## Quick Start
+
+Install and test:
+
+```
+brew tap asinha07/homebrew-tap
+brew install agent
+agent team --input "Team todo app"
+```
 
 Run the viral demo:
 
 ```
 agent run startup-builder
+```
+
+Search and install from GitHub:
+
+```
+agent search --github product
+agent install github.com/owner/repo@v1.0.0
 ```
 
 Use a registry:

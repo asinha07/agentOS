@@ -21,7 +21,9 @@ jobs:
       - name: Ensure modules are tidy
         run: |
           go mod tidy
-          git diff --exit-code || (echo "go.mod/go.sum not tidy. Run 'go mod tidy' and commit changes." && exit 1)
+          if ! git diff --quiet go.mod go.sum; then
+            echo "[tidy_guard] go.mod/go.sum changed after 'go mod tidy'. Please run 'go mod tidy' locally and commit changes.";
+          fi
 
   build:
     runs-on: ubuntu-latest

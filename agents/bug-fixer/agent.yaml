@@ -1,0 +1,12 @@
+{
+  "name": "bug-fixer",
+  "version": "0.2.0",
+  "description": "Plans bug reproduction, root cause, and fix + tests.",
+  "entrypoints": {"run": {"type": "builtin"}},
+  "defaults": {"input": "Login bug", "output": "bug_fix_plan.md"},
+  "tools": ["file_writer"],
+  "model": {"provider": "openai", "model": "gpt-4.1"},
+  "memory": {"type": "jsonl"},
+  "permissions": {"filesystem": "limited"}
+}
+
