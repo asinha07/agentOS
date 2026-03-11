@@ -29,8 +29,18 @@ agent run startup-builder
 Use a registry:
 
 ```
-agent run startup-builder --registry http://localhost:8080
+agent run product-manager --registry http://localhost:8080 --input "Team todo app"
 ```
+
+## Model Providers
+
+Pick your preferred model provider via environment variables and flags.
+
+- OpenAI: set `OPENAI_API_KEY` and run with `--provider openai --model gpt-4.1`.
+- Anthropic (Claude): set `ANTHROPIC_API_KEY` and run with `--provider anthropic --model claude-3-5-sonnet-latest`.
+- xAI (Grok): set `XAI_API_KEY` and run with `--provider xai --model grok-2`.
+
+You can also set provider/model in `agent.yaml` under `model: { provider, model }`. The CLI header prints the active provider and model.
 
 ## Docs
 
@@ -38,4 +48,5 @@ agent run startup-builder --registry http://localhost:8080
 - [Architecture](./architecture.md)
 - [Specification](./spec.md)
 - [Roadmap](./roadmap.md)
-
+- [Five‑Agent Team Demo](./demo-app-team.md)
+- [Model Providers](./models.md)

@@ -3,9 +3,9 @@ AgentOS — Overview
 Vision: Docker for AI agents. Standardize packaging (.agent), runtime contract, and a CLI-first developer experience.
 
 Quickstart
-- Build/run built-in agents: `agent-go run startup-builder`, `agent-go run research-agent`
-- Package an agent: `agent-go build agents/startup-builder`
-- Install from artifact: `agent-go install agents/startup-builder/dist/startup-builder-0.1.0.agent`
+- Run built-in team agents: `agent run product-manager --input "Team todo app"`
+- Compose the team: `agent compose --agents product-manager,be-developer,web-developer,qa,code-reviewer --input "Team todo app"`
+- Package an agent: `agent build agents/product-manager`
 
 Architecture
 - CLI (`cmd/agent`): init, run, build, install, inspect, logs, publish, compose
@@ -19,4 +19,3 @@ Architecture
 Package Format
 - `.agent` is a tar.gz of agent directory (excluding `dist/`)
 - Manifest (`agent.yaml`) uses JSON content for zero-deps parsing in prototype
-

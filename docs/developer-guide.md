@@ -44,7 +44,14 @@ OCI Registry (optional)
 6) Use OpenAI (Optional)
 - Export key in your shell: `export OPENAI_API_KEY=sk-...`
 - Run again; header shows `Model: openai gpt-4.1`.
- - Override on run: `--provider anthropic --model claude-3-5-sonnet-latest` (or `--provider xai --model grok-2`)
+- Override on run: `--provider anthropic --model claude-3-5-sonnet-latest` (or `--provider xai --model grok-2`)
+
+6b) Use Claude or Grok
+- Anthropic (Claude): `export ANTHROPIC_API_KEY=...` then:
+  - `agent run product-manager --provider anthropic --model claude-3-5-sonnet-latest --input "Team todo app"`
+- xAI (Grok): `export XAI_API_KEY=...` then:
+  - `agent run product-manager --provider xai --model grok-2 --input "Team todo app"`
+- Permanent config: set `model: { provider, model }` in your agent.yaml. The CLI header confirms the active model.
 
 7) Add a Workflow
 - Create `workflow.yaml` in your agent folder (JSON content). Example:

@@ -13,6 +13,25 @@ Highlights
 - Tool, model, and memory abstraction behind a stable runtime contract
 - Simple registry integration: search, publish, install
 
+Team Demo — App Docs In Minutes
+- Compose five role-based agents to generate product and engineering docs for an idea:
+  - product-manager → product_spec.md (PRD)
+  - be-developer → backend_design.md (APIs, schema, services)
+  - web-developer → frontend_design.md (routes, components, flows)
+  - qa → test_plan.md (scenarios, edge cases, integration)
+  - code-reviewer → review.md (checklist, design notes, risks)
+- One command:
+  - `agent compose --agents product-manager,be-developer,web-developer,qa,code-reviewer --input "Team todo app"`
+- Pick your model provider per run (examples):
+  - Claude: `--provider anthropic --model claude-3-5-sonnet-latest`
+  - Grok: `--provider xai --model grok-2`
+- Learn more: see [Five‑Agent Team Demo](docs/demo-app-team.md)
+
+Contents
+- [Quick Start](#quick-start)
+- [Model Providers](#model-providers)
+- [Five‑Agent Team Demo](docs/demo-app-team.md)
+
 Quick Start
 - Install via Homebrew (macOS/Linux):
   - `brew tap asinha07/homebrew-tap`
@@ -28,9 +47,12 @@ Quick Start
 - Build from source:
   - `go build -o agent-go ./cmd/agent`
   - `./agent-go run product-manager --input "Team todo app"`
+  - Prefer Claude or Grok? See Model Providers below or run with overrides, for example:
+    - `agent run product-manager --provider anthropic --model claude-3-5-sonnet-latest --input "Team todo app"`
+    - `agent run product-manager --provider xai --model grok-2 --input "Team todo app"`
 - Auto-install from a registry (if missing):
   - Start the sample registry: `go run registry/server/main.go`
-  - `./agent-go run startup-builder --registry http://localhost:8080`
+  - `./agent-go run product-manager --registry http://localhost:8080 --input "Team todo app"`
 - Use OpenAI (optional): `export OPENAI_API_KEY=...` then run again. The header prints the model in use (e.g., `Model: openai gpt-4.1`).
 
 Core Concepts
@@ -93,11 +115,20 @@ Tools (built-ins)
 - `file_reader` — safe file reads within the working directory; requires FS permission
 - `file_writer` — writes files under the working directory; requires FS permission
 
-Model Adapters
-- OpenAI (non-streaming): set `OPENAI_API_KEY`. For gpt-4.1, the adapter tries Chat Completions and falls back to Responses API automatically.
-- Anthropic Claude (non-streaming): set `ANTHROPIC_API_KEY` (uses Messages API, anthropic-version `2023-06-01`). Example model: `claude-3-5-sonnet-latest`.
-- xAI Grok (non-streaming): set `XAI_API_KEY` (uses xAI Chat Completions). Example model: `grok-2` or `grok-beta`.
-- Mock: deterministic text for offline demo and graceful fallback
+Model Providers
+- OpenAI (non-streaming)
+  - Env: `OPENAI_API_KEY`
+  - Example: `agent run product-manager --provider openai --model gpt-4.1 --input "Team todo app"`
+- Anthropic Claude (non-streaming)
+  - Env: `ANTHROPIC_API_KEY`
+  - Example: `agent run product-manager --provider anthropic --model claude-3-5-sonnet-latest --input "Team todo app"`
+- xAI Grok (non-streaming)
+  - Env: `XAI_API_KEY`
+  - Example: `agent run product-manager --provider xai --model grok-2 --input "Team todo app"`
+- Notes
+  - You can permanently set the provider in `agent.yaml` under `model: { provider, model }`, or override per-run with `--provider/--model` flags as shown above.
+  - The header prints the active provider and model (e.g., `Model: anthropic claude-3-5-sonnet-latest`).
+  - If the provider call fails or no key is set, the runtime falls back to a mock response so demos still run offline.
 
 OCI Registry Support (experimental)
 - Push: `./agent-go publish <agent> --oci-ref ghcr.io/<org>/<name>:<tag>` (requires `oras` CLI)
@@ -111,7 +142,9 @@ Outputs and Logs
 - Tail latest: `./agent-go logs <agent> --tail`
 
 Environment Variables
-- `OPENAI_API_KEY` — enable OpenAI model adapter
+- `OPENAI_API_KEY` — for OpenAI models
+- `ANTHROPIC_API_KEY` — for Claude
+- `XAI_API_KEY` — for Grok (xAI)
 - `AGENT_REGISTRY` — default registry URL used by `run` and `install`
 
 Build From Source
@@ -132,6 +165,7 @@ Repository Layout
   - `docs/developer-guide.md` — step-by-step tutorial to create, package, publish, and run agents
   - `docs/index.md` — docs index (GitHub Pages ready)
   - `docs/roadmap.md` — milestones and planned work
+  - `docs/models.md` — provider setup (OpenAI, Claude, Grok) and overrides
   - `docs/demo-app-team.md` — five-agent team demo walkthrough
 
 Continuous Integration
